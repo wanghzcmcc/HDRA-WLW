@@ -7,7 +7,10 @@
 import xlrd
 import xlwt
 import os
-workpath = os.getcwd()
+#workpath = os.getcwd()
+Workpath = os.getcwd()
+workpath=os.path.abspath(os.path.join(Workpath, ".."))
+print (workpath)
 import datetime
 nowTime=datetime.datetime.now().strftime('%H-%M-%S')
 def run(rootPath):
@@ -180,9 +183,9 @@ def VOLTE_WLW_MSISDN1(file_Name):
 				#BELL
 				#Gx指向PCRF，Cx Sh指向IMS-HSS，SLh指向 EPC-HSS
 				pcrf_value=HDRA_Prov_CH[item]['pcrf']
-				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Gx|ROUTESET|{}-rs.\n".format(imsi_value,pcrf_value)
-				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Cx|ROUTESET|{}-IMS-rs.\n".format(imsi_value,hss_value)
-				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Sh|ROUTESET|{}-IMS-rs.\n".format(imsi_value,hss_value)
+				#HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Gx|ROUTESET|{}-rs.\n".format(imsi_value,pcrf_value)
+				#HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Cx|ROUTESET|{}-IMS-rs.\n".format(imsi_value,hss_value)
+				#HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Sh|ROUTESET|{}-IMS-rs.\n".format(imsi_value,hss_value)
 				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=SLh|ROUTESET|{}-rs.\n".format(imsi_value,hss_value)
 				#print (HDRA_Prov_CH[item]['jsj'])
 				#华为
@@ -223,12 +226,15 @@ def VOLTE_WLW_MSISDN1(file_Name):
 				####S6a指向EPC HSS，现保留原始格式 / Cx Zh指向IMS的HSS
 				#Gx指向PCRF，Cx Sh指向IMS-HSS，SLh指向 EPC-HSS
 				rt_bl=route_bell[prov]["归属物联网大区"]
-				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETDIR=ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
+				
 				#非号段归属大区只需要配置一条，落地省再区分接口
-				#HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Gx|ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
-				#HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Cx|ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
-				#HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Sh|ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
-				#HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=SLh|ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
+				if item in HDRA_PROV_WLW:
+					#HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Gx|ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
+					#HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Cx|ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
+					#HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Sh|ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
+					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=SLh|ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
+				else:
+					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETDIR=ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
 				
 				#华为
 				#Cx生成一条IPMU(IMSI) Zh生成一条IMPI（IMSI）S6a生成IMSI
