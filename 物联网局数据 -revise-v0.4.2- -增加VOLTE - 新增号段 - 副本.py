@@ -13,6 +13,7 @@ workpath=os.path.abspath(os.path.join(Workpath, ".."))
 print (workpath)
 import datetime
 nowTime=datetime.datetime.now().strftime('%H-%M-%S')
+
 def run(rootPath):
 
 
@@ -41,53 +42,60 @@ def VOLTE_WLW_IMSI_NEW(file_Name):
 	HW=""
 	HDRA_PROV_WLW=["北京","浙江","广东","四川"]
 	HDRA_Prov_CH={"北京":{'name_en':"BEIJING",'name_short':"BJ",'jsj':"",'hss':["BFMHSS01AZX"],'area':["北京","天津","河北","山西","内蒙古","辽宁","吉林","黑龙江","甘肃","山东","政企"]},\
-					"河北":{'name_en':"HEBEI",'name_short':"SJ",'jsj':"",'hss':[],'area':[]},\
-					"河南":{'name_en':"HENAN",'name_short':"ZZ",'jsj':"",'hss':[],'area':[]},\
-					"江苏":{'name_en':"JIANGSU",'name_short':"NJ",'jsj':"",'hss':[],'area':[]},\
-					"山东":{'name_en':"SHANDONG",'name_short':"JN",'jsj':"",'hss':[],'area':[]},\
-					"浙江":{'name_en':"ZHEJIANG",'name_short':"HZ",'jsj':"",'hss':["DFMHSS01FE01AZX","DFMHSS02FE01AZX","DFMHSS03FE01AZX","DFMHSS04FE01AZX","DFMHSS05FE01AZX"],'area':["上海","浙江","江苏"]},\
-					"四川":{'name_en':"SICHUAN",'name_short':"CD",'jsj':"",'hss':["XFMHSS01FE01AHW","XFMHSS02FE01AHW","XFMHSS03FE01AHW"],'area':["重庆","四川","陕西","云南","西藏","新疆","河南","湖北","青海","宁夏","物联网"]},\
-					"广东":{'name_en':"GUANGDONG",'name_short':"GZ",'jsj':"",'hss':["NFMHSS01AHW"],'area':["广东","广西","海南","贵州","湖南","安徽","江西","福建"]},\
-					"湖北":{'name_en':"HUBEI",'name_short':"WH",'jsj':"",'hss':[],'area':[]}}
+				"河北":{'name_en':"HEBEI",'name_short':"SJ",'jsj':"",'hss':[],'area':[]},\
+				"河南":{'name_en':"HENAN",'name_short':"ZZ",'jsj':"",'hss':[],'area':[]},\
+				"江苏":{'name_en':"JIANGSU",'name_short':"NJ",'jsj':"",'hss':[],'area':[]},\
+				"山东":{'name_en':"SHANDONG",'name_short':"JN",'jsj':"",'hss':[],'area':[]},\
+				"浙江":{'name_en':"ZHEJIANG",'name_short':"HZ",'jsj':"",'hss':["DFMHSS01FE01AZX","DFMHSS02FE01AZX","DFMHSS03FE01AZX","DFMHSS04FE01AZX","DFMHSS05FE01AZX"],'area':["上海","浙江","江苏"]},\
+				"四川":{'name_en':"SICHUAN",'name_short':"CD",'jsj':"",'hss':["XFMHSS01FE01AHW","XFMHSS02FE01AHW","XFMHSS03FE01AHW"],'area':["重庆","四川","陕西","云南","西藏","新疆","河南","湖北","青海","宁夏","物联网"]},\
+				"广东":{'name_en':"GUANGDONG",'name_short':"GZ",'jsj':"",'hss':["NFMHSS01AHW"],'area':["广东","广西","海南","贵州","湖南","安徽","江西","福建"]},\
+				"湖北":{'name_en':"HUBEI",'name_short':"WH",'jsj':"",'hss':[],'area':[]}}
 	for i in range(1,table.nrows):
 		print ("正在制作第"+str(i)+"条"+",共"+str(table.nrows-1)+"条")
 		prov=table.cell(i,0).value
 		imsi_value=str(int(table.cell(i,1).value))
 		hss_value=str(table.cell(i,2).value)
-		
+		rt_bl=route_bell[prov]["归属物联网大区"]
 		for item in HDRA_Prov_CH.keys():
-			#if hss_value in HDRA_Prov_CH[item]["hss"]:	#物联网四大区HDRA制作内容
-			if prov in HDRA_Prov_CH[item]["area"]:   #####由于有现网号段的HSS信息不准，恢复按照省份判断
-				#BELL
-				#S6a指向EPC HSS，现保留原始格式 / Cx Zh指向IMS的HSS
-				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETAPP=S6a|ROUTESET|{}-rs.\n".format(imsi_value,hss_value)
-				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETAPP=Cx|ROUTESET|{}-IMS-rs.\n".format(imsi_value,hss_value)
-				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETAPP=Zh|ROUTESET|{}-IMS-rs.\n".format(imsi_value,hss_value)
-				#华为
-				nextindex=route_hw[HDRA_Prov_CH[item]['name_en']][hss_value]  #指向IMS-HSS
-				nextindex_ims=route_hw[HDRA_Prov_CH[item]['name_en']][hss_value+'-IMS']
-				mog=hss_value
-				mog_ims=hss_value+'-IMS'
+			if item in HDRA_PROV_WLW:
+				if prov in HDRA_Prov_CH[item]["area"]:  
+					#BELL
+					#S6a指向EPC HSS，现保留原始格式 / Cx Zh指向IMS的HSS
+					hss_value_bl=hss_value
+					hss_value_bl_ims=hss_value+"-IMS"
+					
+					#华为
+					nextindex=route_hw[HDRA_Prov_CH[item]['name_en']][hss_value]  #指向IMS-HSS
+					nextindex_ims=route_hw[HDRA_Prov_CH[item]['name_en']][hss_value+'-IMS']
+					mog=hss_value
+					mog_ims=hss_value+'-IMS'
+					
+				else:
+					hss_value_bl=rt_bl
+					hss_value_bl_ims=rt_bl
+					#华为
+					prov_belong=route_bell[prov]["归属物联网大区"]
+					nextindex=route_hw[HDRA_Prov_CH[item]['name_en']][prov_belong]
+					nextindex_ims=route_hw[HDRA_Prov_CH[item]['name_en']][prov_belong]
+					mog=hss_value
+					#mog_ims=hss_value
+				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETAPP=S6a|ROUTESET|{}-rs.\n".format(imsi_value,hss_value_bl)
+				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETAPP=Cx|ROUTESET|{}-rs.\n".format(imsi_value,hss_value_bl_ims)
+				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETAPP=Zh|ROUTESET|{}-rs.\n".format(imsi_value,hss_value_bl_ims)
 				#S6a接口  EPC-HSS
 				HW+="ADD RTIMSI: REFERINDEX=0,IMSI=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
 				#Cx接口 IMS-HSS  ！！！
-				HW+="ADD RTIMPU: REFERINDEX=0,IMPU=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog_ims,HDRA_Prov_CH[item]['name_short'])
+				HW+="ADD RTIMPU: REFERINDEX=0,IMPU=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog,HDRA_Prov_CH[item]['name_short'])
 				#Zh接口 IMS-HSS  ！！！
-				HW+="ADD RTIMPI: REFERINDEX=0,IMPI=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog_ims,HDRA_Prov_CH[item]['name_short'])
+				HW+="ADD RTIMPI: REFERINDEX=0,IMPI=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog,HDRA_Prov_CH[item]['name_short'])
+
+
+
+
+
+
 			else:
-				#BELL
-				"""
-				大区省需要制作3条，非大区省1条
-				"""
-				rt_bl=route_bell[prov]["归属物联网大区"]
-				
-				if item in HDRA_PROV_WLW:
-					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETAPP=S6a|ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
-					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETAPP=Cx|ROUTESET|{}-IMS-rs.\n".format(imsi_value,rt_bl)
-					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETAPP=Zh|ROUTESET|{}-IMS-rs.\n".format(imsi_value,rt_bl)
-				else:
-					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETDIR=ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
-			
+				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETDIR=ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
 				#华为
 				prov_belong=route_bell[prov]["归属物联网大区"]
 				nextindex=route_hw[HDRA_Prov_CH[item]['name_en']][prov_belong]
@@ -101,10 +109,88 @@ def VOLTE_WLW_IMSI_NEW(file_Name):
 				HW+="ADD RTIMPI: REFERINDEX=0,IMPI=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
 
 	for item in HDRA_Prov_CH.keys():
-		c=open(workpath+"\\脚本\\"+"["+HDRA_Prov_CH[item]['name_short']+"DRA01AAL-B]B_"+nowTime+".txt",'w')
+		c=open(workpath+"\\脚本\\"+"["+HDRA_Prov_CH[item]['name_short']+"DRA01AAL-B]B_"+file_Name[-12:-4]+nowTime+".txt",'w')
 		c.write(HDRA_Prov_CH[item]['jsj'])
 		c.close()
-	c=open(workpath+"\\脚本\\"+"_[HW_HDRA]H_"+nowTime+".txt",'w')
+	c=open(workpath+"\\脚本\\"+"_[HW_HDRA]H_"+file_Name[-12:-4]+nowTime+".txt",'w')
+	c.write(HW)
+	c.close()
+
+def VOLTE_WLW_IMSI_NEW_TEMP(file_Name):
+	route_bell,route_hw=ROUTE_NEW()
+	workbook = xlrd.open_workbook(file_Name)
+	table=workbook.sheets()[0]
+	HW=""
+	HDRA_PROV_WLW=["北京","浙江","广东","四川"]
+	HDRA_Prov_CH={"北京":{'name_en':"BEIJING",'name_short':"BJ",'jsj':"",'hss':["BFMHSS01AZX"],'area':["北京","天津","河北","山西","内蒙古","辽宁","吉林","黑龙江","甘肃","山东","政企"]},\
+					"河北":{'name_en':"HEBEI",'name_short':"SJ",'jsj':"",'hss':[],'area':[]},\
+					"河南":{'name_en':"HENAN",'name_short':"ZZ",'jsj':"",'hss':[],'area':[]},\
+					"江苏":{'name_en':"JIANGSU",'name_short':"NJ",'jsj':"",'hss':[],'area':[]},\
+					"山东":{'name_en':"SHANDONG",'name_short':"JN",'jsj':"",'hss':[],'area':[]},\
+					"浙江":{'name_en':"ZHEJIANG",'name_short':"HZ",'jsj':"",'hss':["DFMHSS01FE01AZX","DFMHSS02FE01AZX","DFMHSS03FE01AZX","DFMHSS04FE01AZX","DFMHSS05FE01AZX"],'area':["上海","浙江","江苏"]},\
+					"四川":{'name_en':"SICHUAN",'name_short':"CD",'jsj':"",'hss':["XFMHSS01FE01AHW","XFMHSS02FE01AHW","XFMHSS03FE01AHW"],'area':["重庆","四川","陕西","云南","西藏","新疆","河南","湖北","青海","宁夏","物联网"]},\
+					"广东":{'name_en':"GUANGDONG",'name_short':"GZ",'jsj':"",'hss':["NFMHSS01AHW"],'area':["广东","广西","海南","贵州","湖南","安徽","江西","福建"]},\
+					"湖北":{'name_en':"HUBEI",'name_short':"WH",'jsj':"",'hss':[],'area':[]}}
+	for i in range(1,table.nrows):
+		print ("正在制作第"+str(i)+"条"+",共"+str(table.nrows-1)+"条")
+		prov=table.cell(i,0).value
+		imsi_value=str(int(table.cell(i,1).value))
+		hss_value=str(table.cell(i,2).value)
+		rt_bl=route_bell[prov]["归属物联网大区"]
+		for item in HDRA_Prov_CH.keys():
+			#if hss_value in HDRA_Prov_CH[item]["hss"]:	#物联网四大区HDRA制作内容
+			if item in HDRA_PROV_WLW:
+				if prov in HDRA_Prov_CH[item]["area"]:   #####由于有现网号段的HSS信息不准，恢复按照省份判断
+					#BELL
+					#S6a指向EPC HSS，现保留原始格式 / Cx Zh指向IMS的HSS
+					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETAPP=S6a|ROUTESET|{}-rs.\n".format(imsi_value,hss_value)
+					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETAPP=Cx|ROUTESET|{}-IMS-rs.\n".format(imsi_value,hss_value)
+					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETAPP=Zh|ROUTESET|{}-IMS-rs.\n".format(imsi_value,hss_value)
+					#华为
+					nextindex=route_hw[HDRA_Prov_CH[item]['name_en']][hss_value]  #指向IMS-HSS
+					nextindex_ims=route_hw[HDRA_Prov_CH[item]['name_en']][hss_value+'-IMS']
+					mog=hss_value
+					#mog_ims=hss_value
+					#S6a接口  EPC-HSS
+					HW+="ADD RTIMSI: REFERINDEX=0,IMSI=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
+					#Cx接口 IMS-HSS  ！！！
+					HW+="ADD RTIMPU: REFERINDEX=0,IMPU=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog,HDRA_Prov_CH[item]['name_short'])
+					#Zh接口 IMS-HSS  ！！！
+					HW+="ADD RTIMPI: REFERINDEX=0,IMPI=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog,HDRA_Prov_CH[item]['name_short'])
+				else:
+					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETAPP=S6a|ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
+					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETAPP=Cx|ROUTESET|{}-IMS-rs.\n".format(imsi_value,rt_bl)
+					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETAPP=Zh|ROUTESET|{}-IMS-rs.\n".format(imsi_value,rt_bl)
+					#华为
+					prov_belong=route_bell[prov]["归属物联网大区"]
+					nextindex=route_hw[HDRA_Prov_CH[item]['name_en']][prov_belong]
+					mog=hss_value
+					#S6a接口  EPC-HSS
+					HW+="ADD RTIMSI: REFERINDEX=0,IMSI=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
+					#Cx接口 IMS-HSS  ！！！  此处不涉及，指向归属大区
+					HW+="ADD RTIMPU: REFERINDEX=0,IMPU=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
+					#Zh接口 IMS-HSS  ！！！  此处不涉及，指向归属大区
+					HW+="ADD RTIMPI: REFERINDEX=0,IMPI=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
+
+			else:
+				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:IMSI={},TARGETDIR=ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
+				#华为
+				prov_belong=route_bell[prov]["归属物联网大区"]
+				nextindex=route_hw[HDRA_Prov_CH[item]['name_en']][prov_belong]
+				mog=hss_value
+				#？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？这边好像要指到EPC-HSS
+				#S6a接口  EPC-HSS
+				HW+="ADD RTIMSI: REFERINDEX=0,IMSI=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
+				#Cx接口 IMS-HSS  ！！！  此处不涉及，指向归属大区
+				HW+="ADD RTIMPU: REFERINDEX=0,IMPU=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
+				#Zh接口 IMS-HSS  ！！！  此处不涉及，指向归属大区
+				HW+="ADD RTIMPI: REFERINDEX=0,IMPI=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
+
+	for item in HDRA_Prov_CH.keys():
+		c=open(workpath+"\\脚本\\"+"["+HDRA_Prov_CH[item]['name_short']+"DRA01AAL-B]B_"+file_Name[-12:-4]+nowTime+".txt",'w')
+		c.write(HDRA_Prov_CH[item]['jsj'])
+		c.close()
+	c=open(workpath+"\\脚本\\"+"_[HW_HDRA]H_"+file_Name[-12:-4]+nowTime+".txt",'w')
 	c.write(HW)
 	c.close()
 
@@ -130,64 +216,180 @@ def VOLTE_WLW_MSISDN_NEW(file_Name):
 		imsi_value=str(int(table.cell(i,1).value))
 		hss_value=str(table.cell(i,2).value)
 		
-		for item in HDRA_Prov_CH.keys():
-			#if hss_value in HDRA_Prov_CH[item]["hss"]:	#物联网四大区HDRA制作内容
-			if prov in HDRA_Prov_CH[item]["area"]:
-				#BELL
-				#Gx指向PCRF，Cx Sh指向IMS-HSS，SLh指向 EPC-HSS
-				pcrf_value=HDRA_Prov_CH[item]['pcrf']
-				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Gx|ROUTESET|{}-rs.\n".format(imsi_value,pcrf_value)
-				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Cx|ROUTESET|{}-IMS-rs.\n".format(imsi_value,hss_value)
-				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Sh|ROUTESET|{}-IMS-rs.\n".format(imsi_value,hss_value)
-				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=SLh|ROUTESET|{}-rs.\n".format(imsi_value,hss_value)
-				#print (HDRA_Prov_CH[item]['jsj'])
-				#华为
-				#Cx生成一条IPMU(IMSI) Zh生成一条IMPI（IMSI）S6a生成IMSI
-				nextindex=route_hw[HDRA_Prov_CH[item]['name_en']][hss_value]  #指向EPC-HSS
-				nextindex_ims=route_hw[HDRA_Prov_CH[item]['name_en']][hss_value+'-IMS']
-				nextindex_pcrf=route_hw[HDRA_Prov_CH[item]['name_en']][pcrf_value]
-				mog=hss_value
-				#mog_ims=hss_value+'-IMS'
-				mog_ims=hss_value
-				#mog_pcrf=pcrf_value
-				mog_pcrf=hss_value
-				
+		for item in HDRA_Prov_CH.keys():				
+			if item in HDRA_PROV_WLW:	
+				if prov in HDRA_Prov_CH[item]["area"]:
+					pcrf_value=HDRA_Prov_CH[item]['pcrf']
+					pcrf_value_bl=pcrf_value
+					hss_value_bl=hss_value
+					hss_value_bl_ims=hss_value+"-IMS"
+					#华为
+					#Cx生成一条IPMU(IMSI) Zh生成一条IMPI（IMSI）S6a生成IMSI
+					nextindex=route_hw[HDRA_Prov_CH[item]['name_en']][hss_value]  #指向EPC-HSS
+					nextindex_ims=route_hw[HDRA_Prov_CH[item]['name_en']][hss_value+'-IMS']
+					nextindex_pcrf=route_hw[HDRA_Prov_CH[item]['name_en']][pcrf_value]
+					mog=hss_value
+					mog_ims=hss_value
+					mog_pcrf=hss_value
+				else:
+					rt_bl=route_bell[prov]["归属物联网大区"]
+					pcrf_value_bl=rt_bl
+					hss_value_bl=rt_bl
+					hss_value_bl_ims=rt_bl
+					#华为
+					#Cx生成一条IPMU(IMSI) Zh生成一条IMPI（IMSI）S6a生成IMSI
+					prov_belong=route_bell[prov]["归属物联网大区"]
+					nextindex=route_hw[HDRA_Prov_CH[item]['name_en']][prov_belong]  #指向归属省份
+					nextindex_ims=route_hw[HDRA_Prov_CH[item]['name_en']][prov_belong]
+					nextindex_pcrf=route_hw[HDRA_Prov_CH[item]['name_en']][prov_belong]
+					mog=hss_value
+					mog_ims=hss_value
+					mog_pcrf=hss_value
+				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Gx|ROUTESET|{}-rs.\n".format(imsi_value,pcrf_value_bl)
+				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Cx|ROUTESET|{}-rs.\n".format(imsi_value,hss_value_bl_ims)
+				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Sh|ROUTESET|{}-rs.\n".format(imsi_value,hss_value_bl_ims)
+				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=SLh|ROUTESET|{}-rs.\n".format(imsi_value,hss_value_bl)
 				#Cx接口指向IMS-HSS 默认参考值为0
 				HW+="ADD RTIMPU: REFERINDEX=0,IMPU=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog_ims,HDRA_Prov_CH[item]['name_short'])
-				#Gx接口指向PCRF 默认参考值为0（临时）
+				#Gx接口指向PCRF 默认参考值为0
 				HW+="ADD RTMSISDN: REFERINDEX=0,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_pcrf,mog_pcrf,HDRA_Prov_CH[item]['name_short'])
 				#Sh接口指向IMS-HSS 默认参考值为1！！！
 				HW+="ADD RTMSISDN: REFERINDEX=1,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog_ims,HDRA_Prov_CH[item]['name_short'])
 				#SLh接口指向EPC-HSS 默认参考值为2！！！
 				HW+="ADD RTMSISDN: REFERINDEX=2,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
-				#Gx接口指向PCRF 默认参考值为3
+				#Gx接口指向PCRF 默认参考值为0
 				HW+="ADD RTMSISDN: REFERINDEX=3,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_pcrf,mog_pcrf,HDRA_Prov_CH[item]['name_short'])
-				############这个判断是否4个大区，4大区采用新的MSISDN接口/上面的if判断的为是否是hss归属大区
-				'''if item in HDRA_PROV_WLW:
-				#Sh接口指向IMS-HSS 默认参考值为1！！！
-					HW+="ADD RTMSISDN: REFERINDEX=1,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog_ims,HDRA_Prov_CH[item]['name_short'])
-				#SLh接口指向EPC-HSS 默认参考值为2！！！
-					HW+="ADD RTMSISDN: REFERINDEX=2,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
-				else:
-				#Sh接口指向IMS-HSS 默认参考值为0！！！
-					HW+="ADD RTMSISDN: REFERINDEX=0,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog_ims,HDRA_Prov_CH[item]['name_short'])
-				#SLh接口指向EPC-HSS 默认参考值为0！！！
-					HW+="ADD RTMSISDN: REFERINDEX=0,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
-				'''
 			else:
+				rt_bl=route_bell[prov]["归属物联网大区"]
 				#BELL
 				####S6a指向EPC HSS，现保留原始格式 / Cx Zh指向IMS的HSS
 				#Gx指向PCRF，Cx Sh指向IMS-HSS，SLh指向 EPC-HSS
-				rt_bl=route_bell[prov]["归属物联网大区"]
 				
 				#非号段归属大区只需要配置一条，落地省再区分接口
-				if item in HDRA_PROV_WLW:
+				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETDIR=ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
+				
+				#华为
+				#Cx生成一条IPMU(IMSI) Zh生成一条IMPI（IMSI）S6a生成IMSI
+				prov_belong=route_bell[prov]["归属物联网大区"]
+				#print (prov_belong)
+				nextindex=route_hw[HDRA_Prov_CH[item]['name_en']][prov_belong]
+
+				nextindex=route_hw[HDRA_Prov_CH[item]['name_en']][prov_belong]  #指向归属省份
+				nextindex_ims=route_hw[HDRA_Prov_CH[item]['name_en']][prov_belong]
+				nextindex_pcrf=route_hw[HDRA_Prov_CH[item]['name_en']][prov_belong]
+				#pcrf_value=HDRA_Prov_CH[item]['pcrf']
+				mog=hss_value
+				#mog_ims=hss_value+'-IMS'
+				mog_ims=hss_value
+				#mog_pcrf=pcrf_value
+				mog_pcrf=hss_value
+				#Cx接口指向IMS-HSS 默认参考值为0
+				HW+="ADD RTIMPU: REFERINDEX=0,IMPU=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog_ims,HDRA_Prov_CH[item]['name_short'])
+				#Gx接口指向PCRF 默认参考值为0---没用了，0227
+				#HW+="ADD RTMSISDN: REFERINDEX=0,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_pcrf,mog_pcrf,HDRA_Prov_CH[item]['name_short'])
+				
+				
+				
+
+	for item in HDRA_Prov_CH.keys():
+		c=open(workpath+"\\脚本\\"+"["+HDRA_Prov_CH[item]['name_short']+"DRA01AAL-B]B_"+file_Name[-12:-4]+nowTime+".txt",'w')
+		c.write(HDRA_Prov_CH[item]['jsj'])
+		c.close()
+	c=open(workpath+"\\脚本\\"+"_[HW_HDRA]H_"+file_Name[-12:-4]+nowTime+".txt",'w')
+	c.write(HW)
+	c.close()
+
+def VOLTE_WLW_MSISDN_NEW_TEMP(file_Name):
+	route_bell,route_hw=ROUTE_NEW()
+	workbook = xlrd.open_workbook(file_Name)
+	table=workbook.sheets()[0]
+	HW=""
+	HDRA_PROV_WLW=["北京","浙江","广东","四川"]
+	HDRA_Prov_CH={"北京":{'name_en':"BEIJING",'name_short':"BJ",'jsj':"",'hss':["BFMHSS01AZX"],'area':["北京","天津","河北","山西","内蒙古","辽宁","吉林","黑龙江","甘肃","山东","政企"],'pcrf':'BFMPCRF0102AZX'},\
+					"河北":{'name_en':"HEBEI",'name_short':"SJ",'jsj':"",'hss':[],'area':[]},\
+					"河南":{'name_en':"HENAN",'name_short':"ZZ",'jsj':"",'hss':[],'area':[]},\
+					"江苏":{'name_en':"JIANGSU",'name_short':"NJ",'jsj':"",'hss':[],'area':[]},\
+					"山东":{'name_en':"SHANDONG",'name_short':"JN",'jsj':"",'hss':[],'area':[]},\
+					"浙江":{'name_en':"ZHEJIANG",'name_short':"HZ",'jsj':"",'hss':["DFMHSS01FE01AZX","DFMHSS02FE01AZX","DFMHSS03FE01AZX","DFMHSS04FE01AZX","DFMHSS05FE01AZX"],'area':["上海","浙江","江苏"],'pcrf':'DFMPCRFPOOLER'},\
+					"四川":{'name_en':"SICHUAN",'name_short':"CD",'jsj':"",'hss':["XFMHSS01FE01AHW","XFMHSS02FE01AHW","XFMHSS03FE01AHW"],'area':["重庆","四川","陕西","云南","西藏","新疆","河南","湖北","青海","宁夏","物联网"],'pcrf':'XFMPCRFPOOLHW'},\
+					"广东":{'name_en':"GUANGDONG",'name_short':"GZ",'jsj':"",'hss':["NFMHSS01AHW"],'area':["广东","广西","海南","贵州","湖南","安徽","江西","福建"],'pcrf':'NFMPCRF0102AZX'},\
+					"湖北":{'name_en':"HUBEI",'name_short':"WH",'jsj':"",'hss':[],'area':[]}}
+	for i in range(1,table.nrows):
+		print ("正在制作第"+str(i)+"条"+",共"+str(table.nrows-1)+"条")
+		prov=table.cell(i,0).value
+		imsi_value=str(int(table.cell(i,1).value))
+		hss_value=str(table.cell(i,2).value)
+		
+		for item in HDRA_Prov_CH.keys():				
+			if item in HDRA_PROV_WLW:
+				
+				
+				if prov in HDRA_Prov_CH[item]["area"]:
+					pcrf_value=HDRA_Prov_CH[item]['pcrf']
+					#BELL
+					#Gx指向PCRF，Cx Sh指向IMS-HSS，SLh指向 EPC-HSS
+					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Gx|ROUTESET|{}-rs.\n".format(imsi_value,pcrf_value)
+					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Cx|ROUTESET|{}-IMS-rs.\n".format(imsi_value,hss_value)
+					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Sh|ROUTESET|{}-IMS-rs.\n".format(imsi_value,hss_value)
+					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=SLh|ROUTESET|{}-rs.\n".format(imsi_value,hss_value)
+					#华为
+					#Cx生成一条IPMU(IMSI) Zh生成一条IMPI（IMSI）S6a生成IMSI
+					nextindex=route_hw[HDRA_Prov_CH[item]['name_en']][hss_value]  #指向EPC-HSS
+					nextindex_ims=route_hw[HDRA_Prov_CH[item]['name_en']][hss_value+'-IMS']
+					nextindex_pcrf=route_hw[HDRA_Prov_CH[item]['name_en']][pcrf_value]
+					mog=hss_value
+					#mog_ims=hss_value+'-IMS'
+					mog_ims=hss_value
+					#mog_pcrf=pcrf_value
+					mog_pcrf=hss_value
+					
+					#Cx接口指向IMS-HSS 默认参考值为0
+					HW+="ADD RTIMPU: REFERINDEX=0,IMPU=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog_ims,HDRA_Prov_CH[item]['name_short'])
+					#Gx接口指向PCRF 默认参考值为0（临时）
+					HW+="ADD RTMSISDN: REFERINDEX=0,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_pcrf,mog_pcrf,HDRA_Prov_CH[item]['name_short'])
+					#Sh接口指向IMS-HSS 默认参考值为1！！！
+					HW+="ADD RTMSISDN: REFERINDEX=1,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog_ims,HDRA_Prov_CH[item]['name_short'])
+					#SLh接口指向EPC-HSS 默认参考值为2！！！
+					HW+="ADD RTMSISDN: REFERINDEX=2,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
+					#Gx接口指向PCRF 默认参考值为3
+					HW+="ADD RTMSISDN: REFERINDEX=3,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_pcrf,mog_pcrf,HDRA_Prov_CH[item]['name_short'])
+					
+				else:
+					rt_bl=route_bell[prov]["归属物联网大区"]
 					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Gx|ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
 					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Cx|ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
 					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=Sh|ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
 					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETAPP=SLh|ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
-				else:
-					HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETDIR=ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
+					#华为
+					#Cx生成一条IPMU(IMSI) Zh生成一条IMPI（IMSI）S6a生成IMSI
+					prov_belong=route_bell[prov]["归属物联网大区"]
+					nextindex=route_hw[HDRA_Prov_CH[item]['name_en']][prov_belong]  #指向归属省份
+					nextindex_ims=route_hw[HDRA_Prov_CH[item]['name_en']][prov_belong]
+					nextindex_pcrf=route_hw[HDRA_Prov_CH[item]['name_en']][prov_belong]
+					#pcrf_value=HDRA_Prov_CH[item]['pcrf']
+					mog=hss_value
+					#mog_ims=hss_value+'-IMS'
+					mog_ims=hss_value
+					#mog_pcrf=pcrf_value
+					mog_pcrf=hss_value
+					#Cx接口指向IMS-HSS 默认参考值为0
+					HW+="ADD RTIMPU: REFERINDEX=0,IMPU=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog_ims,HDRA_Prov_CH[item]['name_short'])
+					#Gx接口指向PCRF 默认参考值为0
+					HW+="ADD RTMSISDN: REFERINDEX=0,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_pcrf,mog_pcrf,HDRA_Prov_CH[item]['name_short'])
+					#Sh接口指向IMS-HSS 默认参考值为1！！！
+					HW+="ADD RTMSISDN: REFERINDEX=1,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog_ims,HDRA_Prov_CH[item]['name_short'])
+					#SLh接口指向EPC-HSS 默认参考值为2！！！
+					HW+="ADD RTMSISDN: REFERINDEX=2,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
+					#Gx接口指向PCRF 默认参考值为0
+					HW+="ADD RTMSISDN: REFERINDEX=3,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_pcrf,mog_pcrf,HDRA_Prov_CH[item]['name_short'])
+			else:
+				rt_bl=route_bell[prov]["归属物联网大区"]
+				#BELL
+				####S6a指向EPC HSS，现保留原始格式 / Cx Zh指向IMS的HSS
+				#Gx指向PCRF，Cx Sh指向IMS-HSS，SLh指向 EPC-HSS
+				
+				#非号段归属大区只需要配置一条，落地省再区分接口
+				HDRA_Prov_CH[item]['jsj']+="CREATE-DIAM-PROXYDATA:MSISDN=86{},TARGETDIR=ROUTESET|{}-rs.\n".format(imsi_value,rt_bl)
 				
 				#华为
 				#Cx生成一条IPMU(IMSI) Zh生成一条IMPI（IMSI）S6a生成IMSI
@@ -210,50 +412,15 @@ def VOLTE_WLW_MSISDN_NEW(file_Name):
 				HW+="ADD RTMSISDN: REFERINDEX=0,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_pcrf,mog_pcrf,HDRA_Prov_CH[item]['name_short'])
 				
 				
-				############这个判断是否4个大区，4大区采用新的MSISDN接口/上面的if判断的为是否是hss归属大区
-				if item in HDRA_PROV_WLW:
-				#Sh接口指向IMS-HSS 默认参考值为1！！！
-					HW+="ADD RTMSISDN: REFERINDEX=1,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog_ims,HDRA_Prov_CH[item]['name_short'])
-				#SLh接口指向EPC-HSS 默认参考值为2！！！
-					HW+="ADD RTMSISDN: REFERINDEX=2,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
-				#Gx接口指向PCRF 默认参考值为0
-					HW+="ADD RTMSISDN: REFERINDEX=3,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_pcrf,mog_pcrf,HDRA_Prov_CH[item]['name_short'])
 				
-				#else:
-				#Sh接口指向IMS-HSS 默认参考值为0！！！
-				#	HW+="ADD RTMSISDN: REFERINDEX=0,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog_ims,HDRA_Prov_CH[item]['name_short'])
-				#SLh接口指向EPC-HSS 默认参考值为0！！！
-				#	HW+="ADD RTMSISDN: REFERINDEX=0,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
-				
-
-
-
-
-
-
-				#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>非落地省就用一条MSISDN即可
-				######都是非大区省，用默认的0参考号就行
-				#Sh接口指向IMS-HSS 默认参考值为1！！！>>>>费大区省参考值为0即可
-				#HW+="ADD RTMSISDN: REFERINDEX=0,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex_ims,mog_ims,HDRA_Prov_CH[item]['name_short'])
-				#SLh接口指向EPC-HSS 默认参考值为2！！！>>>>费大区省参考值为0即可
-				#HW+="ADD RTMSISDN: REFERINDEX=0,MSISDN=\"86{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
-
-
-
-
-
-				#HW+="ADD RTIMSI: REFERINDEX=0,IMSI=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
-				#HW+="ADD RTIMSI: REFERINDEX=0,IMPU=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
-				#HW+="ADD RTIMSI: REFERINDEX=0,IMPI=\"{0}\",NEXTRULE=RTEXIT,NEXTINDEX={1},MOG=\"{2}\";{{{3}DRA01AHW-A}}\n".format(imsi_value,nextindex,mog,HDRA_Prov_CH[item]['name_short'])
 
 	for item in HDRA_Prov_CH.keys():
-		c=open(workpath+"\\脚本\\"+"["+HDRA_Prov_CH[item]['name_short']+"DRA01AAL-B]B_"+nowTime+".txt",'w')
+		c=open(workpath+"\\脚本\\"+"["+HDRA_Prov_CH[item]['name_short']+"DRA01AAL-B]B_"+file_Name[-12:-4]+nowTime+".txt",'w')
 		c.write(HDRA_Prov_CH[item]['jsj'])
 		c.close()
-	c=open(workpath+"\\脚本\\"+"_[HW_HDRA]H_"+nowTime+".txt",'w')
+	c=open(workpath+"\\脚本\\"+"_[HW_HDRA]H_"+file_Name[-12:-4]+nowTime+".txt",'w')
 	c.write(HW)
 	c.close()
-
 
 def VOLTE_WLW_IMSI_OLD(file_Name):
 	route_bell,route_hw=ROUTE_NEW()
